@@ -1586,7 +1586,10 @@ const QUESTIONS = [
       "Increments R1"
     ],
     "answer": 1,
-    "topic": "Register Transfer & Bus"
+    "topic": "Register Transfer & Bus",
+    "caseGroup": "cg1",
+    "caseContext": "Case 1\nA system has 4 registers (R0–R3) connected to a common bus using multiplexers.",
+    "caseQuestion": "The control unit selects R2 as the source and R1 as the destination.\n1. What does the MUX do in this case?"
   },
   {
     "question": "What does the decoder do?",
@@ -1597,7 +1600,10 @@ const QUESTIONS = [
       "Clears bus"
     ],
     "answer": 2,
-    "topic": "Register Transfer & Bus"
+    "topic": "Register Transfer & Bus",
+    "caseGroup": "cg1",
+    "caseContext": "Case 1\nA system has 4 registers (R0–R3) connected to a common bus using multiplexers.",
+    "caseQuestion": "What does the decoder do?"
   },
   {
     "question": "The correct RTL expression is:",
@@ -1608,7 +1614,10 @@ const QUESTIONS = [
       "M ← R2"
     ],
     "answer": 2,
-    "topic": "Logic Microoperations"
+    "topic": "Logic Microoperations",
+    "caseGroup": "cg1",
+    "caseContext": "Case 1\nA system has 4 registers (R0–R3) connected to a common bus using multiplexers.",
+    "caseQuestion": "The correct RTL expression is:"
   },
   {
     "question": "Case 2\nA system tries to allow R1 and R2 to place data on the bus at the same time.\n4. What will happen?",
@@ -1619,7 +1628,10 @@ const QUESTIONS = [
       "No effect"
     ],
     "answer": 1,
-    "topic": "Register Transfer & Bus"
+    "topic": "Register Transfer & Bus",
+    "caseGroup": "cg2",
+    "caseContext": "Case 2\nA system tries to allow R1 and R2 to place data on the bus at the same time.",
+    "caseQuestion": "What will happen?"
   },
   {
     "question": "Why must only one register drive the bus at a time?",
@@ -1630,7 +1642,10 @@ const QUESTIONS = [
       "To simplify decoder"
     ],
     "answer": 1,
-    "topic": "Register Transfer & Bus"
+    "topic": "Register Transfer & Bus",
+    "caseGroup": "cg2",
+    "caseContext": "Case 2\nA system tries to allow R1 and R2 to place data on the bus at the same time.",
+    "caseQuestion": "Why must only one register drive the bus at a time?"
   },
   {
     "question": "Case 4\nGiven the RTL:\nP: R3 ← R5, MAR ← IR\nP = 1.\n8. When do both transfers occur?",
@@ -1641,7 +1656,10 @@ const QUESTIONS = [
       "After memory read"
     ],
     "answer": 2,
-    "topic": "Register Transfer & Bus"
+    "topic": "Register Transfer & Bus",
+    "caseGroup": "cg3",
+    "caseContext": "Case 4\nGiven the RTL:\nP: R3 ← R5, MAR ← IR\nP = 1.",
+    "caseQuestion": "When do both transfers occur?"
   },
   {
     "question": "If P = 0, what happens?",
@@ -1652,7 +1670,10 @@ const QUESTIONS = [
       "No transfer"
     ],
     "answer": 3,
-    "topic": "Logic Microoperations"
+    "topic": "Logic Microoperations",
+    "caseGroup": "cg3",
+    "caseContext": "Case 4\nGiven the RTL:\nP: R3 ← R5, MAR ← IR\nP = 1.",
+    "caseQuestion": "If P = 0, what happens?"
   },
   {
     "question": "Case 5\nGiven:\nR1 ← M[MAR]\n10. What must be active?",
@@ -1685,7 +1706,10 @@ const QUESTIONS = [
       "16"
     ],
     "answer": 2,
-    "topic": "Register Transfer & Bus"
+    "topic": "Register Transfer & Bus",
+    "caseGroup": "cg4",
+    "caseContext": "Case 7\nA 16-register system uses a bus architecture.",
+    "caseQuestion": "How many select lines are required for the MUX?"
   },
   {
     "question": "Why is a decoder needed in bus architecture?",
@@ -1696,7 +1720,10 @@ const QUESTIONS = [
       "To perform arithmetic"
     ],
     "answer": 1,
-    "topic": "Register Transfer & Bus"
+    "topic": "Register Transfer & Bus",
+    "caseGroup": "cg4",
+    "caseContext": "Case 7\nA 16-register system uses a bus architecture.",
+    "caseQuestion": "Why is a decoder needed in bus architecture?"
   },
   {
     "question": "Control signal yT2 performs:\nR2 ← R1\nR1 ← R2\nWhich hardware configuration correctly implements this in one clock cycle?",

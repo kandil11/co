@@ -97,7 +97,8 @@ const dom = {
 
 // ── State ──
 let state = {
-  questions: [],
+  slots: [],        // each slot: { type:'single', question } or { type:'case', context, questions:[] }
+  questions: [],     // flat list for counting
   currentIndex: 0,
   score: 0,
   answered: 0,
@@ -108,6 +109,8 @@ let state = {
   isAnswered: false,
   selectedCount: 0,
   selectedTopics: new Set(['all']),
+  caseAnswered: 0,   // tracks how many sub-questions answered in current case
+  caseTotalInSlot: 0, // total sub-questions in current case slot
 };
 
 // ── Theme ──
@@ -241,10 +244,14 @@ function init() {
 function handleKeyboard(e) {
   if (!dom.quizScreen.classList.contains('active')) return;
 
-  if (['1', '2', '3', '4'].includes(e.key)) {
-    const idx = parseInt(e.key) - 1;
-    const btns = dom.optionsGrid.querySelectorAll('.option-btn:not(.disabled)');
-    if (btns[idx] && !state.isAnswered) btns[idx].click();
+  const slot = state.slots[state.currentIndex];
+  // Only use number keys for single questions (not case groups)
+  if (slot && slot.type === 'single') {
+    if (['1', '2', '3', '4'].includes(e.key)) {
+      const idx = parseInt(e.key) - 1;
+      const btns = dom.optionsGrid.querySelectorAll('.option-btn:not(.disabled)');
+      if (btns[idx] && !state.isAnswered) btns[idx].click();
+    }
   }
 
   if (e.key === 'Enter' && state.isAnswered) {
@@ -261,6 +268,37 @@ function showScreen(screen) {
 }
 
 // ── Quiz Flow ──
+function buildSlots(questions) {
+  // Group case-based questions into slots
+  const slots = [];
+  const used = new Set();
+
+  for (let i = 0; i < questions.length; i++) {
+    if (used.has(i)) continue;
+    const q = questions[i];
+
+    if (q.caseGroup) {
+      // Collect all questions in this case group
+      const groupQs = [];
+      for (let j = 0; j < questions.length; j++) {
+        if (questions[j].caseGroup === q.caseGroup) {
+          groupQs.push(questions[j]);
+          used.add(j);
+        }
+      }
+      slots.push({
+        type: 'case',
+        context: q.caseContext,
+        questions: groupQs,
+      });
+    } else {
+      used.add(i);
+      slots.push({ type: 'single', question: q });
+    }
+  }
+  return slots;
+}
+
 function startQuiz() {
   // Filter by selected topics
   let pool = QUESTIONS;
@@ -272,42 +310,74 @@ function startQuiz() {
   // Get selected count
   const activeCountBtn = $('#count-options .timer-btn.active');
   const countVal = activeCountBtn.dataset.count;
-  const maxCount = countVal === 'all' ? pool.length : parseInt(countVal);
 
-  state.questions = shuffle(pool).slice(0, maxCount);
+  // Shuffle then build slots
+  const shuffled = shuffle(pool);
+  const allSlots = buildSlots(shuffled);
+
+  // If count limit, take slots until we hit the question count
+  if (countVal !== 'all') {
+    const maxCount = parseInt(countVal);
+    let count = 0;
+    const limited = [];
+    for (const slot of allSlots) {
+      const n = slot.type === 'case' ? slot.questions.length : 1;
+      if (count + n > maxCount && limited.length > 0) break;
+      limited.push(slot);
+      count += n;
+    }
+    state.slots = limited;
+  } else {
+    state.slots = allSlots;
+  }
+
+  // Flat question count for scoring
+  state.questions = state.slots.flatMap(s => s.type === 'case' ? s.questions : [s.question]);
   state.currentIndex = 0;
   state.score = 0;
   state.answered = 0;
   state.skipped = 0;
   state.isAnswered = false;
+  state.caseAnswered = 0;
+  state.caseTotalInSlot = 0;
 
   showScreen(dom.quizScreen);
-  renderQuestion();
+  renderSlot();
 }
 
-function renderQuestion() {
-  const q = state.questions[state.currentIndex];
-  const total = state.questions.length;
-  const idx = state.currentIndex;
+function renderSlot() {
+  const slot = state.slots[state.currentIndex];
+  if (slot.type === 'case') {
+    renderCaseGroup(slot);
+  } else {
+    renderSingleQuestion(slot.question);
+  }
+}
 
-  // Clear previous state
+// ── Single Question Rendering ──
+function renderSingleQuestion(q) {
   state.isAnswered = false;
+  state.caseAnswered = 0;
+  state.caseTotalInSlot = 1;
   dom.nextBtn.style.display = 'none';
   dom.feedbackBar.classList.remove('show', 'correct-feedback', 'wrong-feedback');
 
   // Header
-  dom.questionCounter.textContent = `Question ${idx + 1} of ${total}`;
+  const totalSlots = state.slots.length;
+  const idx = state.currentIndex;
+  dom.questionCounter.textContent = `Question ${idx + 1} of ${totalSlots}`;
   dom.scoreCounter.textContent = `Score: ${state.score}`;
-  dom.progressBar.style.width = `${((idx) / total) * 100}%`;
+  dom.progressBar.style.width = `${(idx / totalSlots) * 100}%`;
 
   // Question text
+  dom.questionCard.style.display = '';
   dom.questionText.textContent = q.question;
 
-  // Options — shuffle option order
+  // Options
   const optionIndices = q.options.map((_, i) => i);
   const shuffledIndices = shuffle(optionIndices);
-
   dom.optionsGrid.innerHTML = '';
+  dom.optionsGrid.className = 'options-grid';
   const letters = ['A', 'B', 'C', 'D'];
 
   shuffledIndices.forEach((origIdx, displayIdx) => {
@@ -317,7 +387,7 @@ function renderQuestion() {
       <span class="option-letter">${letters[displayIdx]}</span>
       <span class="option-text">${q.options[origIdx]}</span>
     `;
-    btn.addEventListener('click', () => selectAnswer(origIdx, btn));
+    btn.addEventListener('click', () => selectSingleAnswer(q, origIdx, btn));
     dom.optionsGrid.appendChild(btn);
   });
 
@@ -328,82 +398,65 @@ function renderQuestion() {
     state.timeLeft = state.timerSec;
     dom.timerText.textContent = state.timeLeft;
     dom.timerDisplay.classList.remove('warning');
-    state.timerId = setInterval(tickTimer, 1000);
+    state.timerId = setInterval(tickTimerSingle, 1000);
   } else {
     dom.timerDisplay.style.display = 'none';
   }
 }
 
-function tickTimer() {
+function tickTimerSingle() {
   state.timeLeft--;
   dom.timerText.textContent = state.timeLeft;
-
-  if (state.timeLeft <= 5) {
-    dom.timerDisplay.classList.add('warning');
-  }
-
+  if (state.timeLeft <= 5) dom.timerDisplay.classList.add('warning');
   if (state.timeLeft <= 0) {
     clearInterval(state.timerId);
-    // Time's up — mark as skipped
     if (!state.isAnswered) {
       state.skipped++;
-      showFeedback(false, true);
-      disableOptions();
-      highlightCorrect();
+      showSingleFeedback(false, true);
+      dom.optionsGrid.querySelectorAll('.option-btn').forEach(b => b.classList.add('disabled'));
+      highlightSingleCorrect(state.slots[state.currentIndex].question);
       dom.nextBtn.style.display = 'flex';
       state.isAnswered = true;
     }
   }
 }
 
-function selectAnswer(origIdx, btnEl) {
+function selectSingleAnswer(q, origIdx, btnEl) {
   if (state.isAnswered) return;
-
   state.isAnswered = true;
   clearInterval(state.timerId);
   state.answered++;
 
-  const q = state.questions[state.currentIndex];
   const isCorrect = origIdx === q.answer;
-
   if (isCorrect) {
     state.score++;
     btnEl.classList.add('correct');
     playCorrectSound();
-    showFeedback(true);
+    showSingleFeedback(true);
   } else {
     btnEl.classList.add('wrong');
     playWrongSound();
-    showFeedback(false);
-    // Highlight correct answer
-    highlightCorrect();
+    showSingleFeedback(false);
+    highlightSingleCorrect(q);
   }
 
   dom.scoreCounter.textContent = `Score: ${state.score}`;
-  disableOptions();
+  dom.optionsGrid.querySelectorAll('.option-btn').forEach(b => b.classList.add('disabled'));
   dom.nextBtn.style.display = 'flex';
   dom.nextBtn.focus();
 }
 
-function highlightCorrect() {
-  const q = state.questions[state.currentIndex];
-  const optBtns = dom.optionsGrid.querySelectorAll('.option-btn');
-  optBtns.forEach(btn => {
-    const text = btn.querySelector('.option-text').textContent;
-    if (text === q.options[q.answer]) {
+function highlightSingleCorrect(q) {
+  dom.optionsGrid.querySelectorAll('.option-btn').forEach(btn => {
+    if (btn.querySelector('.option-text').textContent === q.options[q.answer]) {
       btn.classList.add('correct');
     }
   });
 }
 
-function disableOptions() {
-  dom.optionsGrid.querySelectorAll('.option-btn').forEach(b => b.classList.add('disabled'));
-}
-
-function showFeedback(isCorrect, isTimeout = false) {
+function showSingleFeedback(isCorrect, isTimeout = false) {
   dom.feedbackBar.classList.remove('correct-feedback', 'wrong-feedback');
   dom.feedbackBar.classList.add('show');
-
   if (isTimeout) {
     dom.feedbackIcon.textContent = '⏱️';
     dom.feedbackText.textContent = "Time's up!";
@@ -417,12 +470,163 @@ function showFeedback(isCorrect, isTimeout = false) {
     dom.feedbackText.textContent = 'Incorrect';
     dom.feedbackBar.classList.add('wrong-feedback');
   }
-
-  // Explanation
-  const q = state.questions[state.currentIndex];
-  dom.explanationText.textContent = q.explanation ? `💡 ${q.explanation}` : '';
+  const slot = state.slots[state.currentIndex];
+  const q = slot.type === 'single' ? slot.question : null;
+  dom.explanationText.textContent = (q && q.explanation) ? `💡 ${q.explanation}` : '';
 }
 
+// ── Case Group Rendering ──
+function renderCaseGroup(slot) {
+  state.isAnswered = false;
+  state.caseAnswered = 0;
+  state.caseTotalInSlot = slot.questions.length;
+  dom.nextBtn.style.display = 'none';
+  dom.feedbackBar.classList.remove('show', 'correct-feedback', 'wrong-feedback');
+
+  const totalSlots = state.slots.length;
+  const idx = state.currentIndex;
+  dom.questionCounter.textContent = `Case ${idx + 1} of ${totalSlots} (${slot.questions.length} questions)`;
+  dom.scoreCounter.textContent = `Score: ${state.score}`;
+  dom.progressBar.style.width = `${(idx / totalSlots) * 100}%`;
+
+  // Show context in the main question card
+  dom.questionCard.style.display = '';
+  dom.questionText.innerHTML = `<span class="case-badge">📋 Case Scenario</span>\n${escapeHtml(slot.context)}`;
+
+  // Build sub-questions
+  dom.optionsGrid.innerHTML = '';
+  dom.optionsGrid.className = 'options-grid case-questions-grid';
+
+  const letters = ['A', 'B', 'C', 'D'];
+
+  slot.questions.forEach((q, qIdx) => {
+    const subBlock = document.createElement('div');
+    subBlock.className = 'case-sub-question';
+    subBlock.dataset.qidx = qIdx;
+
+    // Sub-question text
+    const qText = document.createElement('p');
+    qText.className = 'sub-question-text';
+    qText.textContent = `${qIdx + 1}. ${q.caseQuestion || q.question}`;
+    subBlock.appendChild(qText);
+
+    // Options for this sub-question
+    const optionIndices = q.options.map((_, i) => i);
+    const shuffledIndices = shuffle(optionIndices);
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'sub-options';
+
+    shuffledIndices.forEach((origIdx, displayIdx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `
+        <span class="option-letter">${letters[displayIdx]}</span>
+        <span class="option-text">${q.options[origIdx]}</span>
+      `;
+      btn.addEventListener('click', () => selectCaseAnswer(q, qIdx, origIdx, btn, subBlock));
+      optionsContainer.appendChild(btn);
+    });
+
+    subBlock.appendChild(optionsContainer);
+
+    // Per-question feedback
+    const fb = document.createElement('div');
+    fb.className = 'sub-feedback';
+    subBlock.appendChild(fb);
+
+    dom.optionsGrid.appendChild(subBlock);
+  });
+
+  // Timer (applies to the whole case)
+  clearInterval(state.timerId);
+  if (state.timerSec > 0) {
+    dom.timerDisplay.style.display = 'flex';
+    state.timeLeft = state.timerSec * slot.questions.length; // more time for more questions
+    dom.timerText.textContent = state.timeLeft;
+    dom.timerDisplay.classList.remove('warning');
+    state.timerId = setInterval(tickTimerCase, 1000);
+  } else {
+    dom.timerDisplay.style.display = 'none';
+  }
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function tickTimerCase() {
+  state.timeLeft--;
+  dom.timerText.textContent = state.timeLeft;
+  if (state.timeLeft <= 10) dom.timerDisplay.classList.add('warning');
+  if (state.timeLeft <= 0) {
+    clearInterval(state.timerId);
+    // Time up — mark all unanswered as skipped
+    const slot = state.slots[state.currentIndex];
+    const subBlocks = dom.optionsGrid.querySelectorAll('.case-sub-question');
+    subBlocks.forEach((block, qIdx) => {
+      if (!block.classList.contains('answered')) {
+        block.classList.add('answered');
+        state.skipped++;
+        // Disable options & highlight correct
+        block.querySelectorAll('.option-btn').forEach(b => b.classList.add('disabled'));
+        const q = slot.questions[qIdx];
+        block.querySelectorAll('.option-btn').forEach(btn => {
+          if (btn.querySelector('.option-text').textContent === q.options[q.answer]) {
+            btn.classList.add('correct');
+          }
+        });
+        const fb = block.querySelector('.sub-feedback');
+        fb.textContent = '⏱️ Time\'s up';
+        fb.className = 'sub-feedback show wrong';
+      }
+    });
+    state.isAnswered = true;
+    dom.nextBtn.style.display = 'flex';
+  }
+}
+
+function selectCaseAnswer(q, qIdx, origIdx, btnEl, subBlock) {
+  if (subBlock.classList.contains('answered')) return;
+  subBlock.classList.add('answered');
+  state.answered++;
+  state.caseAnswered++;
+
+  const isCorrect = origIdx === q.answer;
+  const fb = subBlock.querySelector('.sub-feedback');
+
+  if (isCorrect) {
+    state.score++;
+    btnEl.classList.add('correct');
+    playCorrectSound();
+    fb.textContent = '✅ Correct!';
+    fb.className = 'sub-feedback show correct';
+  } else {
+    btnEl.classList.add('wrong');
+    playWrongSound();
+    fb.textContent = '❌ Incorrect';
+    fb.className = 'sub-feedback show wrong';
+    // Highlight correct
+    subBlock.querySelectorAll('.option-btn').forEach(btn => {
+      if (btn.querySelector('.option-text').textContent === q.options[q.answer]) {
+        btn.classList.add('correct');
+      }
+    });
+  }
+
+  // Disable this sub-question's options
+  subBlock.querySelectorAll('.option-btn').forEach(b => b.classList.add('disabled'));
+  dom.scoreCounter.textContent = `Score: ${state.score}`;
+
+  // Check if all sub-questions answered
+  if (state.caseAnswered >= state.caseTotalInSlot) {
+    state.isAnswered = true;
+    clearInterval(state.timerId);
+    dom.nextBtn.style.display = 'flex';
+    dom.nextBtn.focus();
+  }
+}
+
+// ── Navigation ──
 function nextQuestion() {
   const area = dom.questionArea;
   area.classList.add('slide-out');
@@ -431,12 +635,12 @@ function nextQuestion() {
     area.classList.remove('slide-out');
     state.currentIndex++;
 
-    if (state.currentIndex >= state.questions.length) {
+    if (state.currentIndex >= state.slots.length) {
       showResult();
       return;
     }
 
-    renderQuestion();
+    renderSlot();
     area.classList.add('slide-in');
     setTimeout(() => area.classList.remove('slide-in'), 300);
   }, 250);

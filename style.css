@@ -648,6 +648,89 @@ body {
   margin-top: 4px;
 }
 
+/* Case-Based Questions */
+.case-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: 0.03em;
+}
+
+.case-questions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.case-sub-question {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 16px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.case-sub-question.answered {
+  opacity: 0.85;
+}
+
+.sub-question-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.sub-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sub-options .option-btn {
+  padding: 12px 14px;
+  font-size: 0.88rem;
+}
+
+.sub-options .option-letter {
+  width: 28px;
+  height: 28px;
+  font-size: 0.78rem;
+}
+
+.sub-feedback {
+  display: none;
+  margin-top: 10px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  animation: fadeSlideIn 0.25s ease;
+}
+
+.sub-feedback.show {
+  display: block;
+}
+
+.sub-feedback.correct {
+  background: var(--correct-bg);
+  color: var(--correct);
+  border: 1px solid var(--correct-border);
+}
+
+.sub-feedback.wrong {
+  background: var(--wrong-bg);
+  color: var(--wrong);
+  border: 1px solid var(--wrong-border);
+}
+
 /* Next button */
 .btn-next {
   width: 100%;
