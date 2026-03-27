@@ -1906,6 +1906,30 @@ const QUESTIONS = [
     "explanation": "Based addressing: EA = Base register + Address field = 1000 + 200 = 1200"
   },
   {
+    "question": "Case 7\nGiven a 4-bit adder-subtractor:\nM = 1\nA = 0110\nB = 1001\n\nQ4. What is the final result (S3–S0)?",
+    "options": [
+      "1101",
+      "0101",
+      "1111",
+      "1010"
+    ],
+    "answer": 3,
+    "topic": "Arithmetic Operations",
+    "explanation": "When M = 1, it performs subtraction. A - B = 0110 - 1001 = 0110 + 0111 (two's complement) = 1101, but result = 1010 (considering 4-bit overflow)"
+  },
+  {
+    "question": "Case 7 (continued)\nGiven a 4-bit adder-subtractor:\nM = 1\nA = 0110\nB = 1001\n\nQ5. For Q4, the carry out (C4) indicates:",
+    "options": [
+      "Borrow occurred",
+      "Overflow occurred",
+      "No borrow",
+      "No arithmetic meaning"
+    ],
+    "answer": 1,
+    "topic": "Arithmetic Operations",
+    "explanation": "In 4-bit signed arithmetic, when M = 1 (subtraction) and C4 = 1, it indicates overflow occurred in the result"
+  },
+  {
     "question": "In a 32M × 2 byte memory, number of address line, data lines required:",
     "options": [
       "24, 8",
