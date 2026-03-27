@@ -1858,7 +1858,7 @@ const QUESTIONS = [
     "topic": "Logic Microoperations"
   },
   {
-    "question": "Q18\nMemory contents:\nAddress 500: 900\nAddress 900: 1200\nAddress 1200: 77\nInstruction: LOAD 500\nValue loaded for direct addressing mode:",
+    "question": "Case 6\nMemory:\nAddress    Value\n500        900\n900        1200\n1200       77\n\nQ18. Instruction: LOAD 500\nValue loaded for direct addressing mode:",
     "options": [
       "500",
       "900",
@@ -1870,7 +1870,7 @@ const QUESTIONS = [
     "explanation": "Direct addressing: The address field (500) contains the address of the operand. Memory[500] = 900"
   },
   {
-    "question": "Q19\nMemory contents:\nAddress 500: 900\nAddress 900: 1200\nAddress 1200: 77\nInstruction: LOAD 500\nValue loaded indirect addressing mode:",
+    "question": "Case 6 (continued)\nMemory:\nAddress    Value\n500        900\n900        1200\n1200       77\n\nQ19. Instruction: LOAD 500\nValue loaded indirect addressing mode:",
     "options": [
       "900",
       "1200",
@@ -1882,7 +1882,7 @@ const QUESTIONS = [
     "explanation": "Indirect addressing: Memory[500] = 900 (indirect address), Memory[900] = 1200 (operand)"
   },
   {
-    "question": "Q21\nBase register = 1000\nIndex register = 30\nAddress field = 200\nIndexed addressing effective address:",
+    "question": "Case 5\nBase register = 1000\nIndex register = 30\nAddress field = 200\n\nQ21. Indexed addressing effective address:",
     "options": [
       "1030",
       "230",
@@ -1894,7 +1894,7 @@ const QUESTIONS = [
     "explanation": "Indexed addressing: EA = Address field + Index register = 200 + 30 = 230"
   },
   {
-    "question": "Based addressing effective address:",
+    "question": "Case 5 (continued)\nBase register = 1000\nIndex register = 30\nAddress field = 200\n\nQ22. Based addressing effective address:",
     "options": [
       "1030",
       "1200",
@@ -1902,7 +1902,8 @@ const QUESTIONS = [
       "1230"
     ],
     "answer": 1,
-    "topic": "Addressing Modes"
+    "topic": "Addressing Modes",
+    "explanation": "Based addressing: EA = Base register + Address field = 1000 + 200 = 1200"
   },
   {
     "question": "In a 32M × 2 byte memory, number of address line, data lines required:",
