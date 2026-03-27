@@ -1026,7 +1026,7 @@ const QUESTIONS = [
     "topic": "Shift Operations"
   },
   {
-    "question": "Case 3\nMemory contents:\nInstruction: LOAD 400\n3. What value is loaded into the accumulator for indirect addressing ?",
+    "question": "Case 3\nMemory contents:\nAddress 400: 900\nAddress 900: 1200\nAddress 1200: 55\nInstruction: LOAD 400\n3. What value is loaded into the accumulator for indirect addressing ?",
     "options": [
       "400",
       "900",
@@ -1911,6 +1911,173 @@ const QUESTIONS = [
     ],
     "answer": 1,
     "topic": "Addressing Modes"
+  },
+  {
+    "question": "RTL for arithmetic right shift:",
+    "options": [
+      "shl",
+      "ashl",
+      "shr",
+      "ashr"
+    ],
+    "answer": 3,
+    "topic": "Shift Operations"
+  },
+  {
+    "question": "R = 10110000\nAfter shl R, result is:",
+    "options": [
+      "01100000",
+      "01100001",
+      "10110000",
+      "01011000"
+    ],
+    "answer": 0,
+    "topic": "Shift Operations",
+    "explanation": "Shift left moves all bits to the left by one position, filling with 0 on the right"
+  },
+  {
+    "question": "If F = A + B' + 1, the operation equals:",
+    "options": [
+      "Addition",
+      "Subtraction",
+      "AND",
+      "XOR"
+    ],
+    "answer": 1,
+    "topic": "Arithmetic Operations",
+    "explanation": "A + B' + 1 is the two's complement subtraction operation (F = A - B)"
+  },
+  {
+    "question": "Case 4\nBase Register = 1000\nIndex Register = 50\nAddress field in instruction = 200\nInstruction uses indexed addressing.\nEffective address = ?",
+    "options": [
+      "1200",
+      "1050",
+      "250",
+      "1150"
+    ],
+    "answer": 2,
+    "topic": "Addressing Modes",
+    "explanation": "EA = Address field + Index Register = 200 + 50 = 250"
+  },
+  {
+    "question": "4 registers (R0–R3) all connected to a 4×1 MUX, MUX output connected to BUS, Decoder connected to Load inputs of R0–R3.\nSelect lines S1 S0 = 10, Decoder output D1 = 1\nWhat transfer occurs?",
+    "options": [
+      "R1 ← R2",
+      "R2 ← R1",
+      "R2 ← R3",
+      "R1 ← R3"
+    ],
+    "answer": 0,
+    "topic": "Register Transfer & Bus",
+    "explanation": "S1S0 = 10 selects R2 as source, D1 = 1 enables R1 as destination"
+  },
+  {
+    "question": "8 registers connected to bus with 8×1 MUX selecting source.\nSelect lines are 011, Decoder enables R5\nWhat happens?",
+    "options": [
+      "R3 ← R5",
+      "R5 ← R3",
+      "R5 ← R7",
+      "R7 ← R5"
+    ],
+    "answer": 1,
+    "topic": "Register Transfer & Bus",
+    "explanation": "011 = 3 → R3 selected as source, Decoder enables R5 → destination, so R5 ← R3"
+  },
+  {
+    "question": "MAR connected to memory address lines, Read = 1, Memory output connected to bus, Decoder enables R2.\nWhat RTL operation is occurring?",
+    "options": [
+      "M ← R2",
+      "R2 ← M[MAR]",
+      "MAR ← R2",
+      "R2 ← MAR"
+    ],
+    "answer": 1,
+    "topic": "Register Transfer & Bus",
+    "explanation": "Read = 1 means memory read operation. Memory output goes to bus and is loaded into R2"
+  },
+  {
+    "question": "MAR connected to memory address lines, Write = 1, R3 connected to bus, Bus connected to memory data input.\nWhat operation is occurring?",
+    "options": [
+      "R3 ← M[MAR]",
+      "M[MAR] ← R3",
+      "MAR ← R3",
+      "R3 ← MAR"
+    ],
+    "answer": 1,
+    "topic": "Register Transfer & Bus",
+    "explanation": "Write = 1 means memory write operation. R3 data goes to bus and is written to memory at address in MAR"
+  },
+  {
+    "question": "16 registers connected via bus, MUX uses 4 select lines, Decoder uses 4 input lines.\nWhy are 4 select lines needed?",
+    "options": [
+      "2² = 4",
+      "2³ = 8",
+      "2⁴ = 16",
+      "4² = 16"
+    ],
+    "answer": 2,
+    "topic": "Register Transfer & Bus",
+    "explanation": "To select 1 from 16 registers, we need 2^n = 16, so n = 4 select lines"
+  },
+  {
+    "question": "Two registers R1 and R2 both enabled to place data on bus simultaneously.\nWhat is the result?",
+    "options": [
+      "Correct transfer",
+      "Faster operation",
+      "Bus contention",
+      "Automatic priority selection"
+    ],
+    "answer": 2,
+    "topic": "Register Transfer & Bus",
+    "explanation": "When multiple sources try to drive the same bus simultaneously, it causes bus contention"
+  },
+  {
+    "question": "Diagram: BUS ← R6, Decoder enables R4 and R5 simultaneously, Clock pulse occurs.\nWhat happens?",
+    "options": [
+      "Only R4 loads",
+      "Only R5 loads",
+      "Both R4 and R5 load",
+      "Bus collision"
+    ],
+    "answer": 2,
+    "topic": "Register Transfer & Bus",
+    "explanation": "Both decoders are enabled simultaneously, allowing both R4 and R5 to load the same data from bus"
+  },
+  {
+    "question": "BUS ← IR, Decoder enables MAR, Clock pulse.\nWhat is happening?",
+    "options": [
+      "Instruction fetch",
+      "Memory write",
+      "MAR ← IR",
+      "IR ← MAR"
+    ],
+    "answer": 2,
+    "topic": "Register Transfer & Bus",
+    "explanation": "IR content is transferred to MAR (Memory Address Register) via the bus"
+  },
+  {
+    "question": "A system has 16 registers, each 8 bits wide.\nNumber of multiplexers required:",
+    "options": [
+      "8",
+      "16",
+      "128",
+      "32"
+    ],
+    "answer": 0,
+    "topic": "Register Transfer & Bus",
+    "explanation": "For 16 registers with 8 bits each, we need 8 multiplexers (one per bit line)"
+  },
+  {
+    "question": "Signed 8-bit number: 10100000\nAfter arithmetic right shift twice:",
+    "options": [
+      "11101000",
+      "00101000",
+      "10101000",
+      "01101000"
+    ],
+    "answer": 0,
+    "topic": "Shift Operations",
+    "explanation": "Arithmetic right shift preserves sign bit. 10100000 → 11010000 → 11101000"
   }
 ];
 
