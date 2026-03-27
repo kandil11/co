@@ -1858,7 +1858,7 @@ const QUESTIONS = [
     "topic": "Logic Microoperations"
   },
   {
-    "question": "Instruction: LOAD 500\nValue loaded for direct addressing mode:",
+    "question": "Q18\nMemory contents:\nAddress 500: 900\nAddress 900: 1200\nAddress 1200: 77\nInstruction: LOAD 500\nValue loaded for direct addressing mode:",
     "options": [
       "500",
       "900",
@@ -1866,10 +1866,11 @@ const QUESTIONS = [
       "77"
     ],
     "answer": 1,
-    "topic": "Addressing Modes"
+    "topic": "Addressing Modes",
+    "explanation": "Direct addressing: The address field (500) contains the address of the operand. Memory[500] = 900"
   },
   {
-    "question": "Instruction: LOAD 500\nValue loaded indirect addressing mode:",
+    "question": "Q19\nMemory contents:\nAddress 500: 900\nAddress 900: 1200\nAddress 1200: 77\nInstruction: LOAD 500\nValue loaded indirect addressing mode:",
     "options": [
       "900",
       "1200",
@@ -1877,10 +1878,11 @@ const QUESTIONS = [
       "500"
     ],
     "answer": 1,
-    "topic": "Addressing Modes"
+    "topic": "Addressing Modes",
+    "explanation": "Indirect addressing: Memory[500] = 900 (indirect address), Memory[900] = 1200 (operand)"
   },
   {
-    "question": "Indexed addressing effective address:",
+    "question": "Q21\nBase register = 1000\nIndex register = 30\nAddress field = 200\nIndexed addressing effective address:",
     "options": [
       "1030",
       "230",
@@ -1888,7 +1890,8 @@ const QUESTIONS = [
       "970"
     ],
     "answer": 1,
-    "topic": "Addressing Modes"
+    "topic": "Addressing Modes",
+    "explanation": "Indexed addressing: EA = Address field + Index register = 200 + 30 = 230"
   },
   {
     "question": "Based addressing effective address:",
